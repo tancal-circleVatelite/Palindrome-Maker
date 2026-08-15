@@ -2,6 +2,13 @@ __pycache__/
 *.xlsx
 .build-venv/
 build/
-dist/
+dist/*
+!dist/
+!dist/ばてライト回文メーカー.exe
 *.spec
+!PalindromeMaker.spec
 palindrome_bunsetsu.py
+!palindrome_bunsetsu.py
+
+# keep packaged release asset tracked but ignore spec file
+!PalindromeMaker.spec
