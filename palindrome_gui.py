@@ -131,6 +131,21 @@ class PalindromeGeneratorApp:
         ttk.Entry(output_dir_row, textvariable=self.output_dir).pack(side="left", fill="x", expand=True, padx=(8, 8))
         ttk.Button(output_dir_row, text="参照", command=self._choose_output_dir).pack(side="left")
 
+        target_count_row = ttk.Frame(output_frame)
+        target_count_row.pack(fill="x", pady=(0, 8))
+
+        ttk.Label(target_count_row, text="文節数:").pack(side="left")
+        target_count_spinbox = ttk.Spinbox(
+            target_count_row,
+            from_=1,
+            to=100,
+            textvariable=self.target_count,
+            width=8,
+            justify="center",
+        )
+        target_count_spinbox.pack(side="left", padx=(8, 0))
+        ttk.Label(target_count_row, text="文節").pack(side="left", padx=(8, 0))
+
         output_name_row = ttk.Frame(output_frame)
         output_name_row.pack(fill="x")
 
@@ -405,6 +420,16 @@ class PalindromeGeneratorApp:
             messagebox.showwarning("入力エラー", "対象語句を 1 件以上入力してください。")
             return
 
+        try:
+            target_count = int(self.target_count.get())
+        except (TypeError, ValueError):
+            messagebox.showwarning("入力エラー", "文節数は 1 以上の整数を入力してください。")
+            return
+
+        if target_count < 1:
+            messagebox.showwarning("入力エラー", "文節数は 1 以上を指定してください。")
+            return
+
         output_dir = Path(self.output_dir.get()).expanduser().resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -429,7 +454,6 @@ class PalindromeGeneratorApp:
                         break
 
                     seed = self._normalize_phrase_entry(seed_text, seed_reading, db)
-                    target_count = int(self.target_count.get())
                     start = time.perf_counter()
                     cands, explored_nodes = generate_palindrome_candidates(
                         seed=seed,
