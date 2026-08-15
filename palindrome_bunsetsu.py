@@ -340,6 +340,7 @@ def generate_palindrome_candidates(
     allow_duplicate_parts: bool = True,
     progress_callback: Optional[ProgressCallback] = None,
     result_callback: Optional[ResultCallback] = None,
+    cancel_callback: Optional[Callable[[], bool]] = None,
 ) -> Tuple[List[State], int]:
     """
     シード文節 seed から、target_bunsetsu 文節の回文候補を探索する。
@@ -359,6 +360,9 @@ def generate_palindrome_candidates(
 
     def dfs(st: State):
         nonlocal explored_nodes
+        if cancel_callback is not None and cancel_callback():
+            return
+
         explored_nodes += 1
 
         key = (st.L, st.H, st.R, len(st.parts))
@@ -376,6 +380,8 @@ def generate_palindrome_candidates(
         if st.L:
             left_neighbor = st.parts[0] if st.parts else None
             for w in db:
+                if cancel_callback is not None and cancel_callback():
+                    return
                 if (not allow_duplicate_parts) and (w in st.parts):
                     continue
                 if not can_connect(left_neighbor, w, "left"):
@@ -387,6 +393,8 @@ def generate_palindrome_candidates(
         elif st.R:
             right_neighbor = st.parts[-1] if st.parts else None
             for w in db:
+                if cancel_callback is not None and cancel_callback():
+                    return
                 if (not allow_duplicate_parts) and (w in st.parts):
                     continue
                 if not can_connect(right_neighbor, w, "right"):

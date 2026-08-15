@@ -39,6 +39,7 @@ class PalindromeGeneratorApp:
         self.target_table = None
         self.generate_button = None
         self.cancel_button = None
+        self.csv_select_button = None
 
         self._build_ui()
 
@@ -54,7 +55,8 @@ class PalindromeGeneratorApp:
         csv_row.pack(fill="x")
 
         ttk.Entry(csv_row, textvariable=self.csv_path, state="readonly").pack(side="left", fill="x", expand=True)
-        ttk.Button(csv_row, text="参照", command=self._choose_csv).pack(side="left", padx=(8, 0))
+        self.csv_select_button = ttk.Button(csv_row, text="参照", command=self._choose_csv)
+        self.csv_select_button.pack(side="left", padx=(8, 0))
 
         target_frame = ttk.LabelFrame(main, text="2. 生成対象語句", padding=12)
         target_frame.pack(fill="x", pady=(0, 12))
@@ -223,7 +225,7 @@ class PalindromeGeneratorApp:
         text = self.target_seed_text.get().strip()
         reading = self.target_seed_reading.get().strip()
         if not text and not reading:
-            messagebox.showwarning("入力エラー", "seed_text または seed_reading を入力してください。")
+            messagebox.showwarning("入力エラー", "語句と読みを入力してください。")
             return
 
         if not text:
@@ -341,16 +343,21 @@ class PalindromeGeneratorApp:
 
     def _set_generation_lock(self, is_locked: bool) -> None:
         widgets = [
+            self.csv_select_button,
             self.generate_button,
             self.cancel_button,
             self.target_table,
         ]
         for widget in widgets:
-            if widget is not None:
-                if widget is self.cancel_button:
-                    widget.configure(state="normal")
-                else:
-                    widget.configure(state="disabled" if is_locked else "normal")
+            if widget is None:
+                continue
+            if widget is self.cancel_button:
+                widget.state(["!disabled"])
+                continue
+            if is_locked:
+                widget.state(["disabled"])
+            else:
+                widget.state(["!disabled"])
 
     def _generate(self) -> None:
         if self.is_generating:
@@ -375,7 +382,7 @@ class PalindromeGeneratorApp:
 
         self.is_generating = True
         self._set_generation_lock(True)
-        self.cancel_button.configure(state="normal")
+        self.cancel_button.state(["!disabled"])
         self.root.title("文節結合法による回文生成 - 実行中")
         self.status_text.set("回文生成を実行中です... しばらくお待ちください。")
         self._set_candidate_display("生成中... 候補が見つかるたびに更新されます。")
@@ -399,6 +406,7 @@ class PalindromeGeneratorApp:
                         allow_duplicate_parts=True,
                         progress_callback=self._queue_progress,
                         result_callback=self._queue_candidate,
+                        cancel_callback=lambda: not self.is_generating,
                     )
                     elapsed_seconds = time.perf_counter() - start
 
@@ -442,9 +450,6 @@ class PalindromeGeneratorApp:
         self.status_text.set("回文生成を中止しました。")
         self.latest_candidate.set("生成は中止されました。")
         self.root.title("文節結合法による回文生成")
-
-        threading.Thread(target=worker, daemon=True).start()
-        self.root.after(100, self._process_queue)
 
 
 def main() -> None:
