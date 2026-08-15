@@ -1,2 +1,6 @@
 __pycache__/
 *.xlsx
+.build-venv/
+build/
+dist/
+*.spec

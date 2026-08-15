@@ -1,6 +1,7 @@
 import queue
 import threading
 import tkinter as tk
+import tkinter.font as tkfont
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 import time
@@ -40,8 +41,29 @@ class PalindromeGeneratorApp:
         self.generate_button = None
         self.cancel_button = None
         self.csv_select_button = None
+        self.footer_font = self._resolve_footer_font()
 
         self._build_ui()
+
+    @staticmethod
+    def _resolve_footer_font():
+        font_candidates = [
+            Path(__file__).resolve().with_name("HelloHello-H.otf"),
+            Path.cwd() / "HelloHello-H.otf",
+        ]
+
+        for font_path in font_candidates:
+            if not font_path.exists():
+                continue
+            try:
+                return tkfont.Font(file=str(font_path), size=12)
+            except Exception:
+                pass
+
+        try:
+            return tkfont.nametofont("TkDefaultFont").copy()
+        except Exception:
+            return tkfont.Font(size=12)
 
     def _build_ui(self) -> None:
         main = ttk.Frame(self.root, padding=16)
@@ -139,6 +161,16 @@ class PalindromeGeneratorApp:
         candidate_frame.pack(fill="x", pady=(10, 0))
         ttk.Label(candidate_frame, text="生成中候補:", font=("", 9, "bold")).pack(anchor="w")
         ttk.Label(candidate_frame, textvariable=self.latest_candidate, anchor="w", relief="sunken", padding=(6, 4), foreground="#1f3a5f").pack(fill="x")
+
+        footer = tk.Label(
+            self.root,
+            text="サークルばてライト",
+            font=self.footer_font,
+            fg="#6a6a6a",
+            bg=self.root.cget("bg"),
+            anchor="e",
+        )
+        footer.pack(fill="x", side="bottom", padx=18, pady=(0, 10))
 
     def _choose_csv(self) -> None:
         path = filedialog.askopenfilename(
