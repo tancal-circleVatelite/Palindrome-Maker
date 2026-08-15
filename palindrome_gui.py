@@ -22,7 +22,7 @@ class PalindromeGeneratorApp:
         self.root = root
         self.root.title("文節結合法による回文生成")
         self.root.geometry("900x700")
-        self.root.minsize(800, 600)
+        self.root.minsize(800, 800)
 
         self.csv_path = tk.StringVar(value="")
         self.output_dir = tk.StringVar(value=str(Path.cwd()))
